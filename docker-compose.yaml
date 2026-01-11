@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: library-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - db_data:/code/app/data
+    environment:
+      DATABASE_URL: "sqlite:///./data/library.db"
+
+volumes:
+  db_data:
