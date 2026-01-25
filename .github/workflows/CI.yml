@@ -29,6 +29,7 @@ jobs:
 
       - name: Run tests
         run: |
+          pip install pytest
           pytest -q --maxfail=1
 
       - name: Build
