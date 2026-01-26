@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edytuj książkę</h2>
+
+<form method="post" action="/books/{{ book.id }}/edit">
+    
+    <label>Tytuł:</label><br>
+    <input type="text" name="title" value="{{ book.title }}" required><br><br>
+
+    <label>Autor:</label><br>
+    <input type="text" name="author" value="{{ book.author }}" required><br><br>
+
+    <label>Opis:</label><br>
+    <input type="text" name="description" value="{{ book.description }}"><br><br>
+
+    <label>Rok:</label><br>
+    <input type="number" name="year" value="{{ book.year }}"><br><br>
+
+    <button type="submit">Zapisz zmiany</button>
+    <a href="/">Anuluj</a>
+</form>
+{% endblock %}

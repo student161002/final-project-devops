@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Request
 from pathlib import Path
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from routers import books
@@ -29,7 +30,7 @@ async def startup_event():
 
 @app.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return RedirectResponse(url="/books/list")
 
 
 if __name__ == "__main__":
