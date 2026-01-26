@@ -8,6 +8,15 @@ services:
       - db_data:/code/app/data
     environment:
       DATABASE_URL: "sqlite:///./data/library.db"
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - app
 
 volumes:
   db_data:
