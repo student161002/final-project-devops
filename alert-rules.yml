@@ -1,0 +1,11 @@
+groups:
+  - name: fastapi_alerts
+    rules:
+      - alert: HighRequestRate
+        expr: sum(rate(http_request_duration_seconds_count[1m])) > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Wysoka liczba requestów!"
+          description: "Liczba requestów większa niż 100 na minutę. Możliwe przeciążenie aplikacji."

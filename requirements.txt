@@ -6,3 +6,4 @@ jinja2
 python-dotenv
 prometheus-fastapi-instrumentator
 python-multipart
+psycopg2-binary
