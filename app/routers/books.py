@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends, Request, Form, status
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from app import models, schemas
 from app.database import SessionLocal
 
 router = APIRouter(prefix="/books")
-templates = Jinja2Templates(directory="app/templates")
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def get_db():
     db = SessionLocal()
@@ -16,9 +18,13 @@ def get_db():
     finally:
         db.close()
 
+@router.get("/list")
+def list_books_html(request: Request, db: Session = Depends(get_db)):
+    books = db.query(models.Book).all()
+    return templates.TemplateResponse("index.html", {"request": request, "books": books})
 
-@router.get("/")
-def list_books(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[schemas.Book])
+def read_books_json(db: Session = Depends(get_db)):
     return db.query(models.Book).all()
 
 
@@ -62,9 +68,4 @@ def update_book(
 
     db.commit()
     
-    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
-@router.get("/list")
-def list_books_html(request: Request, db: Session = Depends(get_db)):
-    books = db.query(models.Book).all()
-    return templates.TemplateResponse("index.html", {"request": request, "books": books})
+    return RedirectResponse(url="/books/list", status_code=status.HTTP_303_SEE_OTHER)
