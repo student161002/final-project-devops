@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
 from app import models
+from app.auth import get_password_hash
 
 
 def init_db():
@@ -35,6 +36,10 @@ def init_db():
         print("Sample books inserted.")
     else:
         print("Books already exist — skipping initialization.")
+    if db.query(models.User).count() ==0:
+        admin = models.User(username="admin", hashed_password=get_password_hash("admin123"))
+        db.add(admin)
+        db.commit()
 
     db.close()
 
