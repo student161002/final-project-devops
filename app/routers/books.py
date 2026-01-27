@@ -5,23 +5,22 @@ from sqlalchemy.orm import Session
 from pathlib import Path
 
 from app import models, schemas
-from app.database import SessionLocal
+from app.database import SessionLocal, get_db
+from app.auth import get_current_user_from_cookie, get_current_user_from_cookie_optional
 
 router = APIRouter(prefix="/books")
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
+
+
 
 @router.get("/list")
 def list_books_html(request: Request, db: Session = Depends(get_db)):
     books = db.query(models.Book).all()
-    return templates.TemplateResponse("index.html", {"request": request, "books": books})
+    current_user = get_current_user_from_cookie_optional(request, db)
+    return templates.TemplateResponse("index.html", {"request": request, "books": books, "user": current_user})
 
 @router.get("/", response_model=list[schemas.Book])
 def read_books_json(db: Session = Depends(get_db)):
@@ -29,7 +28,9 @@ def read_books_json(db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=schemas.Book)
-def create_book(book: schemas.BookCreate, db: Session = Depends(get_db)):
+def create_book(book: schemas.BookCreate, db: Session = Depends(get_db), user: models.User = Depends(get_current_user_from_cookie)):
+    if not user:
+        return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
     obj = models.Book(
         title=book.title,
         author=book.author,
@@ -43,7 +44,9 @@ def create_book(book: schemas.BookCreate, db: Session = Depends(get_db)):
     return obj
 
 @router.get("/{book_id}/edit")
-def edit_book_form(request: Request, book_id: int, db: Session = Depends(get_db)):
+def edit_book_form(request: Request, book_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user_from_cookie)):
+    if not user:
+        return RedirectResponse("/login")
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
     
     return templates.TemplateResponse("edit_book.html", {"request": request, "book": book})
@@ -56,8 +59,11 @@ def update_book(
     author: str = Form(...),
     description: str = Form(...),
     year: int = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user_from_cookie)
 ):
+    if not user:
+        return RedirectResponse("/login")
     book_query = db.query(models.Book).filter(models.Book.id == book_id)
     book = book_query.first()
 
